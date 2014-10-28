@@ -10,7 +10,7 @@ import java.util.UUID;
 import java.util.logging.Level;
 
 /**
- * Created by user on 28/10/2014.
+ * Created by azdaspaz818 (RPG OWNER) on 28/10/2014.
  */
 public class TPAPlayer {
     private static HashMap<UUID, TPAPlayer> _playerRegistry = new HashMap<UUID, TPAPlayer>();
@@ -18,6 +18,10 @@ public class TPAPlayer {
     private UUID _identifier;
     private ArrayList<TPAPlayer> _inboundRequests = new ArrayList<TPAPlayer>();
     private ArrayList<TPAPlayer> _outboundRequests = new ArrayList<TPAPlayer>();
+
+    public static HashMap<UUID, TPAPlayer> getRegisteredPlayers() {
+        return _playerRegistry;
+    }
 
     public UUID getIdentifier() {
         return _identifier;

@@ -7,7 +7,7 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
 /**
- * Created by user on 29/10/2014.
+ * Created by azdaspaz818 (RPG OWNER) on 29/10/2014.
  */
 public class AdvancedTPAListener implements Listener {
 
@@ -27,6 +27,6 @@ public class AdvancedTPAListener implements Listener {
     @EventHandler
     public void RemoveAchievementPlayer(PlayerQuitEvent e) {
         TPAPlayer.RemoverTPAPlayer(e.getPlayer().getUniqueId());
-    }
+     }
 
 }

@@ -1,5 +1,6 @@
 package com.roastedpotatogaming.AdvancedTPA;
 
+import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.logging.Logger;
@@ -15,9 +16,16 @@ public class AdvancedTPA extends JavaPlugin {
     public void onEnable() {
         new AdvancedTPAListener(this);
     }
-    
-    public void onDisable() {
 
+    @Override
+    public void onDisable() {
+        TPAPlayer.getRegisteredPlayers().clear();
+    }
+
+    public void registerExistingPlayers() {
+        for (int i = 0; i < Bukkit.getOnlinePlayers().length; i++) {
+            TPAPlayer.RegisterTPAPlayer(new TPAPlayer(Bukkit.getOnlinePlayers()[i].getUniqueId()));
+        }
     }
 
 }
