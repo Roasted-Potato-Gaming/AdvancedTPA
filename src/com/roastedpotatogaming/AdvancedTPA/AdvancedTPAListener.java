@@ -26,7 +26,7 @@ public class AdvancedTPAListener implements Listener {
 
     @EventHandler
     public void RemoveAchievementPlayer(PlayerQuitEvent e) {
-        TPAPlayer.RemoverTPAPlayer(e.getPlayer().getUniqueId());
+        TPAPlayer.RemoveTPAPlayer(e.getPlayer().getUniqueId());
      }
 
 }
