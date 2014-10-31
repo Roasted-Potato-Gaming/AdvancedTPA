@@ -22,7 +22,7 @@ public class AdvancedTPA extends JavaPlugin {
     public static final Logger logger = Logger.getLogger("Minecraft");
     protected static AdvancedTPA plugin;
     public static final HashMap<UUID, TPAPlayer> banList = new HashMap<UUID, TPAPlayer>();
-    private final String pref = ChatColor.YELLOW + "[FAG] " + ChatColor.WHITE;
+    private final String pref = ChatColor.YELLOW + "[ATPA] " + ChatColor.WHITE;
 
     @Override
     public void onEnable() {
