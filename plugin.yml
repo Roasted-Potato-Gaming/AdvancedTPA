@@ -3,33 +3,29 @@ version: 1.0.0
 description: A more Advanced Teleport Request plugin
 authors: [azdaspaz818, ScruffyRules]
 website: http://roastedpotatogaming.com/
-main: com.roastedpotatogaming.AdvancedTPA
+main: com.roastedpotatogaming.AdvancedTPA.AdvancedTPA
 prefix: ATPA
 commands:
     tpa:
         description: Base command for ATPA; shows help or sends request (when specified player).
         permission: atpa.general.help
-        usage: Error! Usage: /tpa
+        usage: Error! Usage /tpa
     tpa ban:
         description: Command to ban a player from TPA usage
         permission: atpa.admin.ban
-        usage: Error! Usage: /tpa ban <player>
+        usage: Error! Usage /tpa ban <player>
     tpa <player>:
         description: Command to request to teleport to a player
         permission: atpa.general.request
-        usage: Error! Usage: /tpa <player>
+        usage: Error! Usage /tpa <player>
     tpaccept:
         description: Accept incoming Teleport Request from specified user.
         permission: atpa.general.accept
-        usage: Error! Usage: /tpaccept <player>
-    tpreject:
-        description: Reject incoming Teleport Request from specified user.
-        permission: atpa.general.reject
-        usage: Error! Usage: /tpreject <player>
+        usage: Error! Usage /tpaccept <player>
     tpblacklist:
         description: Reject incoming Teleport Request
         permission: atpa.general.blacklist
-        usage Error! Usage: /tpblacklist <player>
+        usage: Error! Usage /tpblacklist <player>
 permissions:
     atpa.*:
         description: ATPA Complete access permission node.
@@ -38,7 +34,6 @@ permissions:
             atpa.general.*: true
             atpa.general.request: true
             atpa.general.accept: true
-            atpa.general.reject: true
             atpa.general.blacklist: true
             atpa.general.help: true
             atpa.admin.*: true
@@ -57,9 +52,6 @@ permissions:
         default: true
     atpa.general.accept:
         description: Permission node for accepting a request
-        default: true
-    atpa.general.reject:
-        description: Permission node for rejecting a request
         default: true
     atpa.general.blacklist:
         description: Permission node for blacklisting a player
