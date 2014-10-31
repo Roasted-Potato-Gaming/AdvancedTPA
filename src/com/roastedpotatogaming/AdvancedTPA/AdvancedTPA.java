@@ -27,7 +27,7 @@ public class AdvancedTPA extends JavaPlugin {
     @Override
     public void onEnable() {
         new AdvancedTPAListener(this);
-    }
+    } //on enable bc github
 
     @Override
     public void onDisable() {
