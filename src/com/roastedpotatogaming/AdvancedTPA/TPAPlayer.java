@@ -24,11 +24,6 @@ public class TPAPlayer {
         return playerRegistry;
     }
 
-
-    public static TPAPlayer getRegisteredPlayer(UUID id) {
-        return playerRegistry.get(id);
-    }
-
     /**
      *
      * @return
@@ -64,7 +59,6 @@ public class TPAPlayer {
             playerRegistry.put(p.getIdentifier(), p);
         }
     }
-
 
     public static void RemoveTPAPlayer(UUID id) {
         if (playerRegistry.containsKey(id)) {
