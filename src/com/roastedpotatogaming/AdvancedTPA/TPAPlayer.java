@@ -2,7 +2,6 @@ package com.roastedpotatogaming.AdvancedTPA;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
-import sun.util.logging.PlatformLogger;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -16,9 +15,9 @@ public class TPAPlayer {
     private static HashMap<UUID, TPAPlayer> playerRegistry = new HashMap<UUID, TPAPlayer>();
 
     private UUID identifier;
-    private ArrayList<TPAPlayer> inboundRequests = new ArrayList<TPAPlayer>();
-    private ArrayList<TPAPlayer> outboundRequests = new ArrayList<TPAPlayer>();
-    private ArrayList<TPAPlayer> blacklist = new ArrayList<TPAPlayer>();
+    private ArrayList<UUID> inboundRequests = new ArrayList<UUID>();
+    private ArrayList<UUID> outboundRequests = new ArrayList<UUID>();
+    private ArrayList<UUID> blacklist = new ArrayList<UUID>();
 
     public static HashMap<UUID, TPAPlayer> getRegisteredPlayers() {
         return playerRegistry;
@@ -30,15 +29,19 @@ public class TPAPlayer {
     }
 
     /**
-     *
+     * Gets the TPA player's Universally Unique Identifier
      * @return
      */
     public UUID getIdentifier() {
         return this.identifier;
     }
 
-    public ArrayList<TPAPlayer> getOutboundRequests() {
+    public ArrayList<UUID> getOutboundRequests() {
         return this.outboundRequests;
+    }
+
+    public ArrayList<UUID> getInboundRequests() {
+        return this.inboundRequests;
     }
 
     public boolean isRegistered() {
@@ -48,18 +51,18 @@ public class TPAPlayer {
         return false;
     }
 
-    public void addInboundRequest(TPAPlayer tpp) {
-        this.inboundRequests.add(tpp);
+    public void addInboundRequest(UUID id) {
+        this.inboundRequests.add(id);
     }
 
-    public void addOutboundRequest(TPAPlayer tpp) {
-        if (!(tpp.blacklist.contains(this))) {
-            this.outboundRequests.add(tpp);
-            tpp.addInboundRequest(this);
+    public void addOutboundRequest(UUID id) {
+        if (!(playerRegistry.get(id).blacklist.contains(this.getIdentifier()))) {
+            this.outboundRequests.add(id);
+            playerRegistry.get(id).addInboundRequest(this.getIdentifier());
         }
     }
 
-    public static void RegisterTPAPlayer(TPAPlayer p) {
+    private void RegisterTPAPlayer(TPAPlayer p) {
         if (!playerRegistry.containsKey(p.getIdentifier())) {
             playerRegistry.put(p.getIdentifier(), p);
         }
@@ -68,6 +71,19 @@ public class TPAPlayer {
 
     public static void RemoveTPAPlayer(UUID id) {
         if (playerRegistry.containsKey(id)) {
+            TPAPlayer tpap = playerRegistry.get(id);
+            for (int i = 0; i < tpap.getOutboundRequests().size(); i++) {
+                TPAPlayer t = TPAPlayer.getRegisteredPlayer(tpap.getOutboundRequests().get(i));
+                Bukkit.getPlayer(t.getIdentifier()).sendMessage(AdvancedTPA.ChatPrefix + "Player \"" + Bukkit.getPlayer(tpap.getIdentifier()).getName() + "\" left the game. The pending request was cancelled!");
+                t.getInboundRequests().remove(tpap.getIdentifier());
+                tpap.getOutboundRequests().remove(i);
+            }
+            for (int i = 0; i < tpap.getInboundRequests().size(); i++) {
+                TPAPlayer t = TPAPlayer.getRegisteredPlayer(tpap.getInboundRequests().get(i));
+                Bukkit.getPlayer(t.getIdentifier()).sendMessage(AdvancedTPA.ChatPrefix + "Player \"" + Bukkit.getPlayer(tpap.getIdentifier()).getName() + "\" left the game. The pending request was cancelled!");
+                t.getOutboundRequests().remove(tpap.getIdentifier());
+                tpap.getInboundRequests().remove(i);
+            }
             playerRegistry.remove(id);
             AdvancedTPA.logger.log(Level.INFO, "TPAPlayer " + Bukkit.getPlayer(id).getDisplayName() + " deleted successfully.");
         }
@@ -75,6 +91,7 @@ public class TPAPlayer {
 
     public TPAPlayer(UUID id) {
         this.identifier = id;
+        RegisterTPAPlayer(this);
     }
 
     public TPAPlayer(Player p) {

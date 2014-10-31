@@ -21,12 +21,13 @@ public class AdvancedTPAListener implements Listener {
 
     @EventHandler
     public void AddAchievementPlayer(PlayerJoinEvent e) {
-        TPAPlayer.RegisterTPAPlayer(new TPAPlayer(e.getPlayer().getUniqueId()));
+        new TPAPlayer(e.getPlayer().getUniqueId());
     }
 
     @EventHandler
     public void RemoveAchievementPlayer(PlayerQuitEvent e) {
         TPAPlayer.RemoveTPAPlayer(e.getPlayer().getUniqueId());
      }
+
 
 }
