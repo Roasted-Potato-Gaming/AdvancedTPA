@@ -55,11 +55,49 @@ public class TPAPlayer {
         this.inboundRequests.add(id);
     }
 
+    public void removeInboundRequest(UUID id) {
+        this.inboundRequests.remove(id);
+    }
+
     public void addOutboundRequest(UUID id) {
         if (!(playerRegistry.get(id).blacklist.contains(this.getIdentifier()))) {
             this.outboundRequests.add(id);
             playerRegistry.get(id).addInboundRequest(this.getIdentifier());
         }
+    }
+
+    public void removeOutboundRequest(UUID id) {
+        this.outboundRequests.remove(id);
+        TPAPlayer.getRegisteredPlayer(id).removeInboundRequest(this.getIdentifier());
+    }
+
+    public void teleportTo(TPAPlayer targ) {
+        Player src = Bukkit.getPlayer(this.getIdentifier());
+        Player dest = Bukkit.getPlayer(targ.getIdentifier());
+
+        src.teleport(dest.getLocation());
+
+        this.removeOutboundRequest(targ.getIdentifier());
+    }
+
+    public boolean isBlacklisted(UUID id) {
+        return blacklist.contains(id);
+    }
+
+    public boolean blacklistPlayer(UUID id) {
+        if (!blacklist.contains(id)) {
+            blacklist.add(id);
+            return true;
+        }
+        return false;
+    }
+
+    public boolean unblacklistPlayer(UUID id) {
+        if (blacklist.contains(id)) {
+            blacklist.remove(id);
+            return true;
+        }
+        return false;
     }
 
     private void RegisterTPAPlayer(TPAPlayer p) {

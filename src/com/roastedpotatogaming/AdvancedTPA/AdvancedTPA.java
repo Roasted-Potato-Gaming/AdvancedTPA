@@ -36,34 +36,62 @@ public class AdvancedTPA extends JavaPlugin {
         if (sender instanceof Player) {
             Player p = (Player) sender;
             if (cmd.getName().equalsIgnoreCase("tpa")) {
-                if(args.length == 0 || args[0].equalsIgnoreCase("help")) {
+                Player targ;
+                if(args.length == 0 || args[0].equalsIgnoreCase("help")) { //Getting help (/tpa help || /tpa)
                     sendHelp(p);
                     return true;
-                } else if (args.length == 1) {
-                    TPAPlayer s = new TPAPlayer(p.getUniqueId());
+                } else if (args.length == 1) { //Sending requests (/tpa <player>)
+                    TPAPlayer s = TPAPlayer.getRegisteredPlayer(p.getUniqueId());
                     TPAPlayer t;
                     if (Bukkit.getPlayer(args[0]) != null) {
-                        t = new TPAPlayer(Bukkit.getPlayer(args[0]).getUniqueId());
-                    } else {
-                        p.sendMessage(ChatPrefix + "Player not found; request not sent.");
+                        targ = Bukkit.getPlayer(args[0]);
+                        t = TPAPlayer.getRegisteredPlayer(targ.getUniqueId());
+                        if (!t.isBlacklisted(s.getIdentifier())) { //Sender isn't blacklisted, add the request and send messages.
+                            s.addOutboundRequest(t.getIdentifier());
+                            p.sendMessage(ChatPrefix + "A request was sent to " + targ.getName());
+                            targ.sendMessage(ChatPrefix + "You have an incoming TP request from " + p.getName() + ". Type \'/tpaccept " + p.getName() + "\' to accept");
+                        } else { //Tell sender that they are blacklisted for the other player.
+                            p.sendMessage(ChatPrefix + "Player \'" + targ.getName() + "\' has blacklisted you! Unable to send request!");
+                        }
+                    } else { //Must be list
+                        if (args[0].equalsIgnoreCase("list")) {
+                            p.sendMessage(ChatPrefix + "Current inbound requests (type /tpaccept <player> to accept):");
+                            if (s.getInboundRequests().size() == 0) {
+                                p.sendMessage("    You have no requests!");
+                            } else {
+                                System.out.println("Inbound requests: " + s.getInboundRequests().size());
+                                for (int i = 0; i < s.getInboundRequests().size(); i++) {
+                                    p.sendMessage("    " + Bukkit.getPlayer(s.getInboundRequests().get(i)).getName());
+                                }
+                            }
+                            p.sendMessage(ChatPrefix + "Current outbound requests:");
+                            if (s.getOutboundRequests().size() == 0) {
+                                p.sendMessage("    You have no requests! Use \'/tpa <player>\' to make one!");
+                            } else {
+                                System.out.println("Outbound requests: " + s.getOutboundRequests().size());
+                                for (int i = 0; i < s.getOutboundRequests().size(); i++) {
+                                    p.sendMessage("    " + Bukkit.getPlayer(s.getOutboundRequests().get(i)).getName());
+                                }
+                            }
+                        } else {
+                            return false;
+                        }
                         return true;
                     }
-                    t.addInboundRequest(s.getIdentifier());
-                    s.addOutboundRequest(t.getIdentifier());
                     return true;
                 } else if (args.length == 2) {
                     if (args[0].equalsIgnoreCase("ban")) { //Banning players (/tpa ban <player>)
                         if (!banPlayer(args[1])) {
-                            p.sendMessage(this.ChatPrefix + "Player is already banned or does not exist.");
+                            p.sendMessage(ChatPrefix + "Player is already banned or does not exist.");
                         } else {
-                            p.sendMessage(this.ChatPrefix + "Banned player " + args[1]);
+                            p.sendMessage(ChatPrefix + "Banned player " + args[1]);
                         }
                         return true;
                     } else if (args[0].equalsIgnoreCase("unban")) { //Unbanning players (/tpa unban <player>)
                         if (!unbanPlayer(args[1])) {
-                            p.sendMessage(this.ChatPrefix + "Player \"" + args[1] + "\" is not banned from TPA or does not exist.");
+                            p.sendMessage(ChatPrefix + "Player \"" + args[1] + "\" is not banned from TPA or does not exist.");
                         } else {
-                            p.sendMessage(this.ChatPrefix + "Unbanned " + args[1] + ". They can now make TPA requests again.");
+                            p.sendMessage(ChatPrefix + "Unbanned " + args[1] + ". They can now make TPA requests again.");
                         }
                         return true;
                     } else {
@@ -72,12 +100,24 @@ public class AdvancedTPA extends JavaPlugin {
                 } else {
                     return false;
                 }
-            } else if (cmd.getName().equalsIgnoreCase("tpaccept")) {
-                TPAPlayer s = new TPAPlayer(p.getUniqueId());
+            } else if (cmd.getName().equalsIgnoreCase("tpaccept")) { //Accepting TP requests (/tpaccept <player>)
+                TPAPlayer s = TPAPlayer.getRegisteredPlayer(p.getUniqueId());
                 TPAPlayer t;
+                Player targ;
                 if (args.length == 1) {
-                    if (Bukkit.getPlayer(args[0]) != null) {
-
+                    targ = Bukkit.getPlayer(args[0]);
+                    if (targ != null) {
+                        t = TPAPlayer.getRegisteredPlayer(targ.getUniqueId());
+                        if (t.getOutboundRequests().contains(s.getIdentifier())) {
+                            if (s.getInboundRequests().contains(t.getIdentifier())) {
+                                p.sendMessage(ChatPrefix + "Teleporting to " + ChatColor.UNDERLINE + targ.getName() + ".");
+                                s.teleportTo(t);
+                            } else {
+                                p.sendMessage(ChatPrefix + "No inbound request from " + ChatColor.UNDERLINE + targ.getName() + ".");
+                            }
+                        } else {
+                            p.sendMessage(ChatPrefix + "Something went wrong... Target has no outbound request for you.");
+                        }
                     } else {
                         p.sendMessage(ChatPrefix + "Player not found; request can't be accepted!");
                     }
@@ -85,12 +125,37 @@ public class AdvancedTPA extends JavaPlugin {
                     p.sendMessage(ChatPrefix + "Please specify the target player!");
                 }
                 return true;
-            } else if (cmd.getName().equalsIgnoreCase("tpblacklist")) {
-                return false;
+            } else if (cmd.getName().equalsIgnoreCase("tpblacklist")) { //Blacklisting players (/tpblacklist add <player> || /tpblacklist remove <player>)
+                if (args.length == 2) {
+                    TPAPlayer s = TPAPlayer.getRegisteredPlayer(p.getUniqueId());
+                    Player t = Bukkit.getPlayer(args[0]);
+                    if (s != null) {
+                        if (args[0].equalsIgnoreCase("add")) {
+                            if (s.blacklistPlayer(t.getUniqueId())) {
+                                s.removeInboundRequest(t.getUniqueId());
+                                s.removeOutboundRequest(t.getUniqueId());
+                                TPAPlayer.getRegisteredPlayer(t.getUniqueId()).removeInboundRequest(s.getIdentifier());
+                                TPAPlayer.getRegisteredPlayer(t.getUniqueId()).removeOutboundRequest(s.getIdentifier());
+                                p.sendMessage(ChatPrefix + "Player \'" + t.getName() + "\' has been added to your blacklist.");
+                            } else {
+                                p.sendMessage(ChatPrefix + "Player \'" + t.getName() + "\' is already in your blacklist!");
+                            }
+                        } else if (args[0].equalsIgnoreCase("remove")) {
+                            if (s.unblacklistPlayer(t.getUniqueId())) {
+                                p.sendMessage(ChatPrefix + "Player \'" + t.getName() + "\' has been successfully removed from your blacklist!");
+                            } else {
+                                p.sendMessage(ChatPrefix + "Player \'" + t.getName() + "\' isn't on your blacklist.");
+                            }
+                        }
+                    } else {
+                        p.sendMessage(ChatPrefix + "ERROR: Please relog! If problem persists, contact and administrator.");
+                    }
+                    return true;
+                }
             }
             return false;
-        } else {
-            if (cmd.getName().equalsIgnoreCase("tpa") && args.length == 2) {
+        } else { //Sender is console
+            if (cmd.getName().equalsIgnoreCase("tpa") && args.length == 2) { //Console can ban TPA users, and unban them
                 if (args[0].equalsIgnoreCase("ban")) {
                     if (!banPlayer(args[1])) {
                         logger.log(Level.INFO, "[" + this.getDescription().getPrefix() + "] Attempted to ban player " + args[1] + ". Player already banned.");
@@ -108,7 +173,7 @@ public class AdvancedTPA extends JavaPlugin {
                 } else {
                     return false;
                 }
-            } else {
+            } else { //You can't do anything else from console.
                 logger.log(Level.WARNING, "[" + this.getDescription().getPrefix() + "] TPA Commands only available to players.");
                 return true;
             }
