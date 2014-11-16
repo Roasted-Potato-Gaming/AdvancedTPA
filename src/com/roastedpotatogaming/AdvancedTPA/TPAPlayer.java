@@ -76,8 +76,6 @@ public class TPAPlayer {
         Player dest = Bukkit.getPlayer(targ.getIdentifier());
 
         src.teleport(dest.getLocation());
-
-        this.removeOutboundRequest(targ.getIdentifier());
     }
 
     public boolean isBanned() {

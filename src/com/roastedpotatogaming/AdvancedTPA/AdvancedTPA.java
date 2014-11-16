@@ -28,6 +28,7 @@ public class AdvancedTPA extends JavaPlugin {
     @Override
     public void onEnable() {
         new AdvancedTPAListener(this);
+        registerExistingPlayers();
     } //on enable bc github
 
     @Override
@@ -40,7 +41,11 @@ public class AdvancedTPA extends JavaPlugin {
         if (sender instanceof Player) {
             Player p = (Player) sender;
             TPAPlayer s = TPAPlayer.getRegisteredPlayer(p.getUniqueId());
-            if (cmd.getName().equalsIgnoreCase("tpa") && !banList.containsKey(p.getUniqueId())) {
+            if (cmd.getName().equalsIgnoreCase("tpa")) {
+                if (banList.containsKey(p.getUniqueId())) {
+                    p.sendMessage(ChatPrefix + "You are currently banned and unable to make tpa requests");
+                    return false;
+                }
                 Player targ;
                 if(args.length == 0 || args[0].equalsIgnoreCase("help")) { //Getting help (/tpa help || /tpa)
                     sendHelp(p);
@@ -49,11 +54,22 @@ public class AdvancedTPA extends JavaPlugin {
                     TPAPlayer t;
                     if (Bukkit.getPlayer(args[0]) != null) {
                         targ = Bukkit.getPlayer(args[0]);
+                        if (targ == null) {
+                            p.sendMessage(ChatPrefix + "Target is not online.");
+                        }
                         t = TPAPlayer.getRegisteredPlayer(targ.getUniqueId());
                         if (!t.isBlacklisted(s.getIdentifier())) { //Sender isn't blacklisted, add the request and send messages.
-                            s.addOutboundRequest(t.getIdentifier());
-                            p.sendMessage(ChatPrefix + "A request was sent to " + targ.getName());
-                            targ.sendMessage(ChatPrefix + "You have an incoming TP request from " + p.getName() + ". Type \'/tpaccept " + p.getName() + "\' to accept");
+                            if (targ != p) {
+                                if (!s.getOutboundRequests().contains(t.getIdentifier())) {
+                                    s.addOutboundRequest(t.getIdentifier());
+                                    p.sendMessage(ChatPrefix + "A request was sent to " + targ.getName());
+                                    targ.sendMessage(ChatPrefix + "You have an incoming TP request from " + p.getName() + ". Type \'/tpaccept " + p.getName() + "\' to accept");
+                                } else { //Request already exists
+                                    p.sendMessage(ChatPrefix + "You have already sent a request to \"" + targ.getName() + ".\"");
+                                }
+                            } else { //Teleport to self.
+                                p.sendMessage(ChatPrefix + "You cannot send a teleport request to yourself!");
+                            }
                         } else { //Tell sender that they are blacklisted for the other player.
                             p.sendMessage(ChatPrefix + "Player \'" + targ.getName() + "\' has blacklisted you! Unable to send request!");
                         }
@@ -114,7 +130,7 @@ public class AdvancedTPA extends JavaPlugin {
                         if (t.getOutboundRequests().contains(s.getIdentifier())) {
                             if (s.getInboundRequests().contains(t.getIdentifier())) {
                                 p.sendMessage(ChatPrefix + "Teleporting to " + ChatColor.UNDERLINE + targ.getName() + ".");
-                                s.teleportTo(t);
+                                t.teleportTo(s);
                                 t.removeOutboundRequest(s.getIdentifier());
                                 s.removeInboundRequest(t.getIdentifier());
                             } else {
@@ -125,6 +141,10 @@ public class AdvancedTPA extends JavaPlugin {
                         }
                     } else {
                         p.sendMessage(ChatPrefix + "Player not found; request can't be accepted!");
+                    }
+                } else if(args.length == 0) {
+                    if (s.getInboundRequests().size() > 0) {
+                        s.teleportTo(TPAPlayer.getRegisteredPlayer(s.getInboundRequests().get(0)));
                     }
                 } else {
                     p.sendMessage(ChatPrefix + "Please specify the target player!");
