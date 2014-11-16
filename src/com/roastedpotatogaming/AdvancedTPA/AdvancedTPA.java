@@ -18,8 +18,12 @@ import java.util.logging.Logger;
 public class AdvancedTPA extends JavaPlugin {
     public static final Logger logger = Logger.getLogger("Minecraft");
     protected static AdvancedTPA plugin;
-    public static final HashMap<UUID, TPAPlayer> banList = new HashMap<UUID, TPAPlayer>();
+    private static final HashMap<UUID, TPAPlayer> banList = new HashMap<UUID, TPAPlayer>();
     public static final String ChatPrefix = ChatColor.YELLOW + "[ATPA] " + ChatColor.WHITE;
+
+    public static HashMap<UUID, TPAPlayer> getBanList() {
+        return AdvancedTPA.banList;
+    }
 
     @Override
     public void onEnable() {
@@ -35,13 +39,13 @@ public class AdvancedTPA extends JavaPlugin {
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         if (sender instanceof Player) {
             Player p = (Player) sender;
-            if (cmd.getName().equalsIgnoreCase("tpa")) {
+            TPAPlayer s = TPAPlayer.getRegisteredPlayer(p.getUniqueId());
+            if (cmd.getName().equalsIgnoreCase("tpa") && !banList.containsKey(p.getUniqueId())) {
                 Player targ;
                 if(args.length == 0 || args[0].equalsIgnoreCase("help")) { //Getting help (/tpa help || /tpa)
                     sendHelp(p);
                     return true;
                 } else if (args.length == 1) { //Sending requests (/tpa <player>)
-                    TPAPlayer s = TPAPlayer.getRegisteredPlayer(p.getUniqueId());
                     TPAPlayer t;
                     if (Bukkit.getPlayer(args[0]) != null) {
                         targ = Bukkit.getPlayer(args[0]);
@@ -101,7 +105,6 @@ public class AdvancedTPA extends JavaPlugin {
                     return false;
                 }
             } else if (cmd.getName().equalsIgnoreCase("tpaccept")) { //Accepting TP requests (/tpaccept <player>)
-                TPAPlayer s = TPAPlayer.getRegisteredPlayer(p.getUniqueId());
                 TPAPlayer t;
                 Player targ;
                 if (args.length == 1) {
@@ -112,6 +115,8 @@ public class AdvancedTPA extends JavaPlugin {
                             if (s.getInboundRequests().contains(t.getIdentifier())) {
                                 p.sendMessage(ChatPrefix + "Teleporting to " + ChatColor.UNDERLINE + targ.getName() + ".");
                                 s.teleportTo(t);
+                                t.removeOutboundRequest(s.getIdentifier());
+                                s.removeInboundRequest(t.getIdentifier());
                             } else {
                                 p.sendMessage(ChatPrefix + "No inbound request from " + ChatColor.UNDERLINE + targ.getName() + ".");
                             }
@@ -127,9 +132,8 @@ public class AdvancedTPA extends JavaPlugin {
                 return true;
             } else if (cmd.getName().equalsIgnoreCase("tpblacklist")) { //Blacklisting players (/tpblacklist add <player> || /tpblacklist remove <player>)
                 if (args.length == 2) {
-                    TPAPlayer s = TPAPlayer.getRegisteredPlayer(p.getUniqueId());
-                    Player t = Bukkit.getPlayer(args[0]);
-                    if (s != null) {
+                    Player t = Bukkit.getPlayer(args[1]);
+                    if (t != null) {
                         if (args[0].equalsIgnoreCase("add")) {
                             if (s.blacklistPlayer(t.getUniqueId())) {
                                 s.removeInboundRequest(t.getUniqueId());

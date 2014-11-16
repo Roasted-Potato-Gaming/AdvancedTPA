@@ -80,6 +80,13 @@ public class TPAPlayer {
         this.removeOutboundRequest(targ.getIdentifier());
     }
 
+    public boolean isBanned() {
+        if (AdvancedTPA.getBanList().containsKey(this.getIdentifier())) {
+            return true;
+        }
+        return false;
+    }
+
     public boolean isBlacklisted(UUID id) {
         return blacklist.contains(id);
     }
