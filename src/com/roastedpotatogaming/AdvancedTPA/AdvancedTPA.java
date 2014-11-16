@@ -44,7 +44,7 @@ public class AdvancedTPA extends JavaPlugin {
             if (cmd.getName().equalsIgnoreCase("tpa")) {
                 if (banList.containsKey(p.getUniqueId())) {
                     p.sendMessage(ChatPrefix + "You are currently banned and unable to make tpa requests");
-                    return false;
+                    return true;
                 }
                 Player targ;
                 if(args.length == 0 || args[0].equalsIgnoreCase("help")) { //Getting help (/tpa help || /tpa)
@@ -160,7 +160,7 @@ public class AdvancedTPA extends JavaPlugin {
                                 s.removeOutboundRequest(t.getUniqueId());
                                 TPAPlayer.getRegisteredPlayer(t.getUniqueId()).removeInboundRequest(s.getIdentifier());
                                 TPAPlayer.getRegisteredPlayer(t.getUniqueId()).removeOutboundRequest(s.getIdentifier());
-                                p.sendMessage(ChatPrefix + "Player \'" + t.getName() + "\' has been added to your blacklist.");
+                                p.sendMessage(ChatPrefix + "Player \'" + t.getName() + "\' has been successfully added to your blacklist.");
                             } else {
                                 p.sendMessage(ChatPrefix + "Player \'" + t.getName() + "\' is already in your blacklist!");
                             }

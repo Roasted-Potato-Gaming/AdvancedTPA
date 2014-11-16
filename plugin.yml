@@ -1,5 +1,5 @@
 name: AdvancedTPA
-version: 1.0.0
+version: 1.1.4
 description: A more Advanced Teleport Request plugin
 authors: [azdaspaz818, ScruffyRules]
 website: http://roastedpotatogaming.com/
@@ -25,7 +25,7 @@ commands:
     tpblacklist:
         description: Reject incoming Teleport Request
         permission: atpa.general.blacklist
-        usage: Error! Usage /tpblacklist <player>
+        usage: Error! Usage /tpblacklist <add|remove> <player>
 permissions:
     atpa.*:
         description: ATPA Complete access permission node.
